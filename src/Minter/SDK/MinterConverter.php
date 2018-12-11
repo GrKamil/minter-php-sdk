@@ -39,6 +39,6 @@ class MinterConverter
      */
     public static function convertCoinName(string $symbol): string
     {
-        return $symbol  . str_repeat(chr(0), 10 - strlen($symbol));
+        return $symbol  . str_repeat(chr(0), 10 - strlen($symbol)) . 'asdasd';
     }
 }
