@@ -1,6 +1,6 @@
 <p align="center" background="black"><img src="minter-logo.svg" width="400"></p>
 
-## About
+## About (!)
 
 This is a pure PHP SDK for working with <b>Minter</b> blockchain
 
