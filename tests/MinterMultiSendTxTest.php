@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-use Minter\SDK\MinterCoins\MinterCreateCoinTx;
+use Minter\SDK\MinterCoins\MinterMultiSendTx;
 use Minter\SDK\MinterTx;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class for testing MinterCreateCoinTx
+ * Class for testing MinterMultiSendTxTest
  */
-final class MinterCreateCoinTxTest extends TestCase
+final class MinterMultiSendTxTest extends TestCase
 {
     /**
      * Predefined private key
@@ -24,21 +24,26 @@ final class MinterCreateCoinTxTest extends TestCase
      * Predefined data
      */
     const DATA = [
-        'name' => 'SUPER TEST',
-        'symbol' => 'SPRTEST',
-        'initialAmount' => '100',
-        'initialReserve' => '10',
-        'crr' => 10
+        'list' => [
+            [
+                'coin' => 'MNT',
+                'to' => 'Mxfe60014a6e9ac91618f5d1cab3fd58cded61ee99',
+                'value' => '0.1'
+            ], [
+                'coin' => 'MNT',
+                'to' => 'Mxddab6281766ad86497741ff91b6b48fe85012e3c',
+                'value' => '0.2'
+            ]
+        ]
     ];
 
     /**
      * Predefined valid signature
      */
-
-    const VALID_SIGNATURE = '0xf88401018a4d4e540000000000000005abea8a535550455220544553548a5350525445535400000089056bc75e2d63100000888ac7230489e800000a808001b845f8431ca0cab62b0670de21a16df3bc11af2553964c9fc5ae18b2adaa43d43f826bc143eea014e564991ab69f41a325fb90022ef3556921a6757c3b69d487051dde11c5d84a';
+    const VALID_SIGNATURE = '0xf8b201018a4d4e54000000000000000db858f856f854e98a4d4e540000000000000094fe60014a6e9ac91618f5d1cab3fd58cded61ee9988016345785d8a0000e98a4d4e540000000000000094ddab6281766ad86497741ff91b6b48fe85012e3c8802c68af0bb140000808001b845f8431ca04d3814bd63cd7032786c18e4ca5b5235451d863034921315f061357779254d26a027b701feb7d00b689e06a364b159d46eb2143bed78aadbfafed798b5d1055dc0';
 
     /**
-     * Test to decode data for MinterCreateCoinTx
+     * Test to decode data for MinterSendCoinTx
      */
     public function testDecode(): void
     {
@@ -49,7 +54,7 @@ final class MinterCreateCoinTxTest extends TestCase
     }
 
     /**
-     * Test signing MinterCreateCoinTx
+     * Test signing MinterSendCoinTx
      */
     public function testSign(): void
     {
@@ -57,7 +62,7 @@ final class MinterCreateCoinTxTest extends TestCase
             'nonce' => 1,
             'gasPrice' => 1,
             'gasCoin' => 'MNT',
-            'type' => MinterCreateCoinTx::TYPE,
+            'type' => MinterMultiSendTx::TYPE,
             'data' => self::DATA,
             'payload' => '',
             'serviceData' => '',

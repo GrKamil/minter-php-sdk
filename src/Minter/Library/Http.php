@@ -1,9 +1,13 @@
 <?php
-namespace Minter\Traits;
+namespace Minter\Library;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 
+/**
+ * Trait Http
+ * @package Minter\Library
+ */
 Trait Http
 {
     /**
@@ -11,17 +15,19 @@ Trait Http
      *
      * @Client
      */
-    private $client;
+    protected $client;
 
     /**
-     * set base api url
+     * Set base API url.
      *
      * @param string $url
      */
-    private function setApiUrl(string $url) : void {
-
+    protected function setApiUrl(string $url): void
+    {
         $this->client = new Client([
-            'base_uri' => $url
+            'base_uri' => $url,
+            'connect_timeout' => 15.0,
+            'timeout' => 30.0,
         ]);
     }
 
@@ -33,16 +39,14 @@ Trait Http
      * @return mixed
      * @throws \Exception
      */
-    private function get(string $url, array $parameters = null)
+    protected function get(string $url, array $parameters = null)
     {
         try {
-
             $response = $this->client->request('GET', $url, [
                 'query' => $parameters
             ])->getBody();
-
         } catch (RequestException $exception) {
-            throw new \Exception($exception->getMessage());
+            throw $exception;
         }
 
         return json_decode($response);
@@ -56,14 +60,12 @@ Trait Http
      * @return mixed
      * @throws \Exception
      */
-    private function post(string $url, array $parameters)
+    protected function post(string $url, array $parameters = [])
     {
         try {
-
             $response = $this->client->request('POST', $url, [
                 'json' => $parameters
             ])->getBody();
-
         } catch (RequestException $exception) {
             throw $exception;
         }

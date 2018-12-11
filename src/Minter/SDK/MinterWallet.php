@@ -2,16 +2,27 @@
 
 namespace Minter\SDK;
 
+use BitWasp\BitcoinLib\BIP39\BIP39;
 use kornrunner\Keccak;
-use Elliptic\EC;
-use Elliptic\EC\KeyPair;
+use BIP\BIP44;
+use Minter\Library\ECDSA;
+use Minter\Library\Helper;
 
+/**
+ * Class MinterWallet
+ * @package Minter\SDK
+ */
 class MinterWallet
 {
     /**
-     * Prefix for address
+     * Amount of entropy bits
      */
-    const PREFIX = 'Mx';
+    const BIP44_ENTROPY_BITS = 128;
+
+    /**
+     * Address path for creating wallet from the seed
+     */
+    const BIP44_SEED_ADDRESS_PATH = "m/44'/60'/0'/0/0";
 
     /**
      * Create Minter wallet
@@ -21,46 +32,32 @@ class MinterWallet
      */
     public static function create(): array
     {
-        $privateKey = self::generatePrivateKey();
+        $entropy = BIP39::generateEntropy(self::BIP44_ENTROPY_BITS);
+        $mnemonic = BIP39::entropyToMnemonic($entropy);
+        $seed = BIP39::mnemonicToSeedHex($mnemonic, '');
+        $privateKey = BIP44::fromMasterSeed($seed)->derive(self::BIP44_SEED_ADDRESS_PATH)->privateKey;
 
-        $publicKey = self::generatePublicKey([
-            'priv' => $privateKey,
-            'privEnc' => 'hex'
-        ]);
+        $publicKey = self::privateToPublic($privateKey);
 
         $address = self::getAddressFromPublicKey($publicKey);
 
         return [
             'address' => $address,
-            'private_key' => $privateKey
+            'private_key' => $privateKey,
+            'mnemonic' => $mnemonic,
+            'seed' => $seed
         ];
     }
-
-    /**
-     * Generate private key by random bytes
-     *
-     * @return string
-     * @throws \Exception
-     */
-    public static function generatePrivateKey(): string
-    {
-        return bin2hex(
-            random_bytes(32)
-        );
-    }
-
+    
     /**
      * Generate public key
      *
-     * @param array $options
+     * @param string $privateKey
      * @return string
      */
-    public static function generatePublicKey(array $options): string
+    public static function privateToPublic(string $privateKey): string
     {
-        $ec = new EC('secp256k1');
-        $keyPair = new KeyPair($ec, $options);
-
-        return substr($keyPair->getPublic('hex'), 2, 130);
+        return MinterPrefix::PUBLIC_KEY .  ECDSA::privateToPublic($privateKey);
     }
 
     /**
@@ -72,9 +69,13 @@ class MinterWallet
      */
     public static function getAddressFromPublicKey(string $publicKey): string
     {
+        // remove public key
+        $publicKey = Helper::removePrefix($publicKey, MinterPrefix::PUBLIC_KEY);
+
+        // create keccak hash
         $hash = Keccak::hash(hex2bin($publicKey), 256);
 
-        return self::PREFIX . substr($hash, -40);
+        return MinterPrefix::ADDRESS . substr($hash, -40);
     }
 
     /**
@@ -85,6 +86,6 @@ class MinterWallet
      */
     public static function validateAddress(string $address): bool
     {
-        return strlen($address) === 42 && substr($address, 0, 2) === self::PREFIX && ctype_xdigit(substr($address, -40));
+        return strlen($address) === 42 && substr($address, 0, 2) === MinterPrefix::ADDRESS && ctype_xdigit(substr($address, -40));
     }
 }

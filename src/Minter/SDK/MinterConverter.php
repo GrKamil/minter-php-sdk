@@ -2,26 +2,32 @@
 
 namespace Minter\SDK;
 
+use Minter\Library\Helper;
+
+/**
+ * Class MinterConverter
+ * @package Minter\SDK
+ */
 class MinterConverter
 {
     /**
      * PIP in BIP
      */
-    const DEFAULT = 100000000;
+    const DEFAULT = '1000000000000000000';
 
     /**
      * Convert value
      *
-     * @param float $num
+     * @param string $num
      * @param string $to
-     * @return int
+     * @return string
      */
-    public static function convertValue(float $num, string $to)
+    public static function convertValue(string $num, string $to)
     {
         if ($to === 'pip') {
-            return intval(self::DEFAULT * $num);
+            return bcmul(self::DEFAULT, $num, 0);
         } else if ($to === 'bip') {
-            return $num / self::DEFAULT;
+            return Helper::niceNumber(bcdiv($num, self::DEFAULT, 25));
         }
     }
 
